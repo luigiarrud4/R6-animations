@@ -1,0 +1,184 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Config = {
+    pingspoofamount = 100,
+    howmuchlagdoyouwant = 0.1,
+    clonetrans = 0.5,
+    pingspoofENABLE = false,
+    seeyourlag = true,
+    enablelag = false
+}
+
+-- cloneshit
+local Clone = Character:Clone()
+Clone.Archivable = false
+for _, part in pairs(Clone:GetDescendants()) do
+    if part:IsA("BasePart") then
+        part.Transparency = Config.clonetrans
+        part.CanCollide = false
+    end
+end
+Clone.Parent = workspace
+
+-- fucking gui
+local Window = Rayfield:CreateWindow({
+    Name = "Fakelag bullshit",
+    LoadingTitle = "Made by @NOTGodlynoah",
+    LoadingSubtitle = "made at 2:28 am",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = nil,
+        FileName = "Fakelag_Bullshit"
+    }
+})
+
+local thetab = Window:CreateTab("main or sum", 4483362458)
+
+thetab:CreateSlider({
+    Name = "ping spewf slidar",
+    Range = {0, 1000},
+    Increment = 10,
+    Suffix = "ms",
+    CurrentValue = Config.pingspoofamount,
+    Flag = "pingspoofamount",
+    Callback = function(Value)
+        Config.pingspoofamount = Value
+    end,
+})
+
+thetab:CreateSlider({
+    Name = "fakelag delay",
+    Range = {0, 1},
+    Increment = 0.01,
+    Suffix = "s",
+    CurrentValue = Config.howmuchlagdoyouwant,
+    Flag = "howmuchlagdoyouwant",
+    Callback = function(Value)
+        Config.howmuchlagdoyouwant = Value
+    end,
+})
+
+thetab:CreateSlider({
+    Name = "render of clone transparency",
+    Range = {0, 1},
+    Increment = 0.1,
+    Suffix = "%",
+    CurrentValue = Config.clonetrans,
+    Flag = "clonetrans",
+    Callback = function(Value)
+        Config.clonetrans = Value
+        for _, part in pairs(Clone:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Transparency = Value
+            end
+        end
+    end,
+})
+
+thetab:CreateToggle({
+    Name = "Ping spoofing toggl",
+    CurrentValue = Config.pingspoofENABLE,
+    Flag = "pingspoofENABLE",
+    Callback = function(Value)
+        Config.pingspoofENABLE = Value
+    end,
+})
+
+thetab:CreateToggle({
+    Name = "render clone (what others see)",
+    CurrentValue = Config.seeyourlag,
+    Flag = "seeyourlag",
+    Callback = function(Value)
+        Config.seeyourlag = Value
+        Clone.Parent = Value and workspace or nil
+    end,
+})
+
+thetab:CreateToggle({
+    Name = "the acutal fucking fakelag",
+    CurrentValue = Config.enablelag,
+    Flag = "enablelag",
+    Callback = function(Value)
+        Config.enablelag = Value
+    end,
+})
+
+-- the actual fucking script:
+local lastupdatetim = 0
+local function updateServerPosition()
+    if not Config.enablelag then return end
+    
+    local currentTime = tick()
+    if currentTime - lastupdatetim < Config.howmuchlagdoyouwant then return end
+    
+    lastupdatetim = currentTime
+    
+    -- position (i want to die :])
+    Clone:SetPrimaryPartCFrame(Character.PrimaryPart.CFrame)
+    
+    -- animations
+    for _, track in pairs(Humanoid:GetPlayingAnimationTracks()) do
+        local cloneTrack = Clone.Humanoid:LoadAnimation(track.Animation)
+        cloneTrack:Play()
+        cloneTrack.TimePosition = track.TimePosition
+    end
+end
+
+-- spewf the fugking ping
+local function spoofping()
+    if not Config.pingspoofENABLE then return end
+    
+    local fakeLatency = Config.pingspoofamount / 1000
+    wait(fakeLatency)
+end
+
+-- Idk if this works but it MIGHT help prevent detection
+local function shouldDisableScript()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local distance = (player.Character.PrimaryPart.Position - Character.PrimaryPart.Position).Magnitude
+            if distance < 10 then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+-- loop updater thing
+RunService.Heartbeat:Connect(function()
+    if shouldDisableScript() then
+        Config.enablelag = false
+        Config.pingspoofENABLE = false
+        Clone.Parent = nil
+        return
+    end
+    
+    updateServerPosition()
+    spoofping()
+end)
+
+-- kill the fucking script properly when you close the gui
+game:BindToClose(function()
+    Clone:Destroy()
+    Rayfield:Destroy()
+end)
+
+Rayfield:LoadConfiguration()
+
+
+-- fakelag pingspoof shit made by @NOTGodlynoah 
+-- i made it at 2 am for no reason
+-- i dont care if you take my code or use it somewhere (you shouldnt)
+-- but if you do please leave in some credit, or this little chunk here
+-- im going to bed
